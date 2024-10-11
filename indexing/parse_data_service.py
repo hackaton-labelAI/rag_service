@@ -9,6 +9,7 @@ class ReturnFormat:
     char_position_end: int
     chapter: str
     chunk_text: List[str]
+    full_chapter_text: str
 
 
 def parsing_data_from_pdf(path: str, token_chink: int = 512, overlay: bool = True)->List[ReturnFormat]:
