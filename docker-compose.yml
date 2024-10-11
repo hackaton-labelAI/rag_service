@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  rag_server:
+    build: .
+    container_name: rag_server_container
+    ports:
+      - "8080:8080"
+    restart: unless-stopped

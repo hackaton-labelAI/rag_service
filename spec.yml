@@ -1,0 +1,113 @@
+openapi: 3.0.0
+info:
+  description: "API for RAG"
+  version: "1.0.0"
+  title: "RAG API"
+
+paths:
+  /api/chat:
+    post:
+      tags:
+        - chat
+      operationId: chat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatContext'
+      responses:
+        '200':
+          description: "Successful response"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RAGResponseData'
+
+  /api/document:
+    get:
+      tags:
+        - document
+      operationId: getDocument
+      description: "Get the full document with text and images"
+      responses:
+        '200':
+          description: "Successful document retrieval"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentResponse'
+
+components:
+  schemas:
+    ChatContext:
+      type: object
+      properties:
+        context:
+          type: array
+          items:
+            $ref: "#/components/schemas/MessageData"
+
+    MessageData:
+      type: object
+      properties:
+        text_data:
+          $ref: "#/components/schemas/ChatTextData"
+        rag_data:
+          $ref: "#/components/schemas/ChatRAGData"
+
+    ChatRAGData:
+      type: object
+      properties:
+        document_date:
+          type: string
+          format: date
+          description: "Date of the document"
+        chunk_text:
+          type: string
+          description: "Text chunk from the document"
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+            description: "Links to images associated with the document"
+
+    ChatTextData:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [ 'user', 'assistant', 'system' ]
+          description: "Role in the chat"
+        content:
+          type: string
+          description: "Message content"
+
+    RAGResponseData:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: "ID of the response"
+        status:
+          type: string
+          description: "Status of the response"
+        data:
+          $ref: '#/components/schemas/ChatContext'
+
+    DocumentResponse:
+      type: object
+      properties:
+        document_id:
+          type: integer
+          description: "ID of the document"
+        document_text:
+          type: string
+          description: "Full document text with images"
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+            description: "Links to document images"

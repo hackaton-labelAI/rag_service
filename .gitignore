@@ -1,0 +1,12 @@
+.venv
+
+endpoints/apis/
+endpoints/models/
+endpoints/router_init.py
+
+/openapi-generator-output
+
+.idea
+
+__pycache__/
+*.pyc
