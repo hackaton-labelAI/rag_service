@@ -5,3 +5,7 @@ websockets
 whoosh
 tiktoken
 langchain_community
+langchain
+pypdf
+tiktoken
+annoy
