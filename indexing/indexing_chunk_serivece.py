@@ -6,7 +6,7 @@ from typing import List
 from openai import AsyncOpenAI
 from pydantic.dataclasses import dataclass
 
-from indexing.parse_data_service import ReturnFormat, ChunksData
+from indexing.parse_data_service import ReturnFormat, ChunkData
 from services.promts import generate_doc_context_promt
 from services.search_services import get_index
 
@@ -100,10 +100,11 @@ if __name__ == "__main__":
         document = 'девки в озере купались, хуй резиновый нашли. Целый день они ебались даже в школу не пошли'
         chunk = 'хуй резиновый'
 
-        test_chunk_data = ChunksData(
+        test_chunk_data = ChunkData(
             chunk_text=chunk,
             char_position_start=0,
-            char_position_end=100
+            char_position_end=100,
+            chapter=document
         )
 
         test_data = ReturnFormat(chunk_text=[test_chunk_data],
@@ -115,10 +116,11 @@ if __name__ == "__main__":
         document = 'Помидоры помидоры помидоры овощи'
         chunk = 'овощи'
 
-        test_chunk_data = ChunksData(
+        test_chunk_data = ChunkData(
             chunk_text=chunk,
             char_position_start=0,
-            char_position_end=100
+            char_position_end=100,
+            chapter = document
         )
 
         test_data = ReturnFormat(chunk_text=[test_chunk_data],
@@ -130,10 +132,11 @@ if __name__ == "__main__":
         document = 'пизда едет на кобыле а хуй на скорой помощи'
         chunk = 'а хуй'
 
-        test_chunk_data = ChunksData(
+        test_chunk_data = ChunkData(
             chunk_text=chunk,
             char_position_start=0,
-            char_position_end=100
+            char_position_end=100,
+            chapter=document
         )
 
         test_data = ReturnFormat(chunk_text=[test_chunk_data],
