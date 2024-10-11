@@ -9,9 +9,6 @@ MAIN_WRITELOCK
 
 .venv
 
-endpoints/apis/
-endpoints/models/
-endpoints/router_init.py
 
 /openapi-generator-output
 
