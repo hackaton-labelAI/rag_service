@@ -98,4 +98,4 @@ if __name__ == "__main__":
             print(
                 f"Chunk Text: {chunk.chunk_text}, Start: {chunk.char_position_start}, End: {chunk.char_position_end}, Chapter: {chunk.chapter}")
 
-print(f"all_data must be 12, but real: {len(result)}")
+# print(f"all_data must be 12, but real: {len(result)}")
