@@ -7,7 +7,7 @@ from openai import AsyncOpenAI
 from pydantic.dataclasses import dataclass
 
 from indexing.parse_data_service import ReturnFormat, ChunkData
-from services.prompts import generate_doc_context_promt
+from services.prompts import generate_doc_context_prompt, generate_chunks_context_prompt
 from services.search_services import get_index
 
 
@@ -35,9 +35,9 @@ async def indexing_file(file_info: List[ReturnFormat]) -> List[IndexingChunk]:
     processed_chunks = []
     for chapter in file_info:
         for chunk in chapter.chunk_text:
-            document_context_promt = generate_doc_context_promt(chapter.full_chapter_text)
-            generate_chunks_context_promt = generate_doc_context_promt(chunk.chunk_text)
-            context = await interaction_with_llm(document_context_promt, generate_chunks_context_promt)
+            document_context_prompt = generate_doc_context_prompt(chapter.full_chapter_text)
+            generate_chunks_context_prompt = generate_doc_context_prompt(chunk.chunk_text)
+            context = await interaction_with_llm(document_context_prompt, generate_chunks_context_prompt)
             context = context['full_text']
             id = str(uuid.uuid4())
             indexed_chunk = IndexingChunk(
@@ -96,7 +96,7 @@ async def interaction_with_llm(document_context_promt: str, chunk_generate_promt
 
 
 if __name__ == "__main__":
-    async def test():
+    async def test_bm25():
         document = 'девки в озере купались, хуй резиновый нашли. Целый день они ебались даже в школу не пошли'
         chunk = 'хуй резиновый'
 
@@ -153,4 +153,56 @@ if __name__ == "__main__":
             print(results[0])
 
 
-    asyncio.run(test())
+    async def test_prompt():
+        document="""
+        Коллективным договором Петропавловского отделения Южно-Уральской
+железной дороги - филиала ОАО «РЖД» на 2023 - 2025 годы могут быть
+определены категории лиц, которые относятся, либо не относятся к
+неработающим пенсионерам данного филиала. Установление более широкого
+по сравнению с установленным настоящим Договором перечня категорий лиц,
+которые относятся к неработающим пенсионерам данного филиала,
+допускается только по согласованию с Комиссией по подготовке коллективного
+договора ОАО «РЖД» и контролю за его выполнением в установленном
+порядке.
+В настоящем Договоре используются следующие понятия:
+Работники - физические лица, вступившие и состоящие в трудовых
+отношениях с ОАО «РЖД»;
+Работодатель, Компания - ОАО «РЖД»;
+представитель Работников, Профсоюз - первичная профсоюзная
+организация ОАО «Российские железные дороги» Российского
+профессионального союза железнодорожников и транспортных строителей
+(РОСПРОФЖЕЛ), объединяющая в своих рядах более половины работников
+ОАО «РЖД»;
+представитель Работодателя - генеральный директор - председатель
+правления ОАО «РЖД», а также лица, уполномоченные им в порядке,
+установленном законодательством Российской Федерации;
+филиал - обособленное структурное подразделение Компании,
+действующее в соответствии с уставом ОАО «РЖД», утвержденным
+постановлением Правительства Российской Федерации от 27 октября 2021 года
+№ 1838;
+представительство - обособленное структурное подразделение
+Компании, действующее в соответствии с уставом ОАО «РЖД», утвержденным
+постановлением Правительства Российской Федерации от 27 октября
+2021 года № 1838;
+спортивный оператор Компании в части организации и проведения
+физкультурных и массовых спортивных мероприятий - Российское
+физкультурно-спортивное общество «Локомотив», РФСО «Локомотив»;
+объекты социальной сферы - учреждения здравоохранения,
+образовательные учреждения, учреждения культуры и спорта, учрежденные
+ОАО «РЖД», структурные подразделения филиалов, специализирующиеся на
+санаторно-курортном лечении, оздоровлении и отдыхе, а также структурные
+подразделения филиалов, специализирующиеся на проведении спортивных,
+культурно-просветительских и иных корпоративных мероприятий;
+региональные особенности - различия филиалов, других структурных
+подразделений, представительств: в социально-демографическом «портрете»
+        """
+        chunk = ''
+
+        document_context_prompt = generate_doc_context_prompt(document)
+        generate_chunks_context_prompt = generate_doc_context_prompt(chunk)
+
+        print(await interaction_with_llm(document_context_prompt, generate_chunks_context_prompt))
+
+
+    #asyncio.run(test_bm25())
+    asyncio.run(test_prompt())
