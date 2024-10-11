@@ -7,7 +7,7 @@ from openai import AsyncOpenAI
 from pydantic.dataclasses import dataclass
 
 from indexing.parse_data_service import ReturnFormat, ChunkData
-from services.promts import generate_doc_context_promt
+from services.prompts import generate_doc_context_promt
 from services.search_services import get_index
 
 
