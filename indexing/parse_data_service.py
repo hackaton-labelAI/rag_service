@@ -84,7 +84,7 @@ def parsing_data_from_text(content: str, token_chunk: int = 250, overlay: int = 
 
         all_data.append(ReturnFormat(
             chunk_text=chunk_data_list,
-            full_chapter_text=content
+            full_chapter_text=text['text']
         ))
 
     return all_data
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     for i, return_format in enumerate(result):
         print(f"Total chunks in section {i}: {len(return_format.chunk_text)}")
         for chunk in return_format.chunk_text:
-            print(
-                f"Chunk Text: {chunk.chunk_text}, Start: {chunk.char_position_start}, End: {chunk.char_position_end}, Chapter: {chunk.chapter}")
+            print(f"Chunk Text: {chunk.chunk_text}, Start: {chunk.char_position_start}, End: {chunk.char_position_end}, Chapter: {chunk.chapter}")
+            print(f"Full Chapter Text: {return_format.full_chapter_text}")
 
 # print(f"all_data must be 12, but real: {len(result)}")
