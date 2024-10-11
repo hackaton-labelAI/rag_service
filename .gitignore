@@ -1,3 +1,12 @@
+.DS_Store
+*.toc
+*.pst
+*.trm
+*.ctmp
+*.seg
+
+MAIN_WRITELOCK
+
 .venv
 
 
