@@ -1,3 +1,11 @@
+*.toc
+*.pst
+*.trm
+*.ctmp
+*.seg
+
+MAIN_WRITELOCK
+
 .venv
 
 endpoints/apis/

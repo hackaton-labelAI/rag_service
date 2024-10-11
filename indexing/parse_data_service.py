@@ -4,11 +4,15 @@ from pydantic.dataclasses import dataclass
 
 
 @dataclass
-class ReturnFormat:
+class ChunksData:
+    chunk_text: str
     char_position_start: int
     char_position_end: int
+
+@dataclass
+class ReturnFormat:
     chapter: str
-    chunk_text: List[str]
+    chunk_text: List[ChunksData]
     full_chapter_text: str
 
 
