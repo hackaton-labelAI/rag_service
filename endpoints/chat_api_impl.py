@@ -6,8 +6,7 @@ from services.answer_service import resolve_issue
 from services.gpt_service import ranking
 from services.search import search
 import asyncio
-
-
+from endpoints.ws.chat_ws import generate_results
 
 
 class ChatApiImpl(BaseChatApi):
@@ -28,9 +27,9 @@ class ChatApiImpl(BaseChatApi):
             dd = await ranking(query, resp)
             cc = []
             for item in dd:
-                cc.append(ChatRAGData(chunk_text=item['contextualized_content']))
+                cc.append(ChatRAGData(chunk_text=item['original_content']))
             chat_history = [ll.text_data for ll in context]
-
+            asyncio.create_task(generate_results(chat_context.session_id, dd, chat_history))
             return RAGResponseData(
                 id="test",
                 status="ok",
@@ -53,9 +52,9 @@ class ChatApiImpl(BaseChatApi):
 
             cc=[]
             for item in dd:
-                cc.append(ChatRAGData(chunk_text=item['contextualized_content']))
+                cc.append(ChatRAGData(chunk_text=item['original_content']))
             chat_history = [ll.text_data for ll in chat_context.context]
-
+            asyncio.create_task(generate_results(chat_context.session_id, dd, chat_history))
             return RAGResponseData(
                 id= "test",
                 status = "ok",

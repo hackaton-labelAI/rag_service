@@ -1,13 +1,19 @@
 import uuid
+import pandas
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 import asyncio
+
+from services.gpt_service import stream_output
+
 # from services.text_generation import generate_text
 
 router = APIRouter()
 
 # Словарь для хранения соответствий user_id и WebSocket
+knowledge_base_path = '/Users/anasenicenkova/PycharmProjects/rag_service/data/База знаний.csv'
 active_connections = {}
+df = pandas.read_csv(knowledge_base_path)
 
 
 @router.websocket("/ws/chat")
@@ -34,7 +40,13 @@ async def websocket_chat(websocket: WebSocket):
 
 
 
-async def func(user_id, files):
+async def generate_results(user_id, files, chat_history):
     websocket = active_connections[user_id]
 
-    просим гпт не матерясь никогда ни в коем блять случае ответить на вопрос юзера. Передаем его вопрос и контекст
+    answer = await stream_output(chat_history, files, websocket)
+
+    df.loc[len(df)] = [None, None,None, None, chat_history, None, None, None, None, None, None, None, None, answer, files, None]
+    df.to_csv(knowledge_base_path, index=False)
+
+    await websocket.send_text('<|endoftext|>')
+

@@ -111,6 +111,33 @@ async def interaction_with_llm(document: str):
     }
 
 
+async def stream_output(chat_history, chunks, websocket):
+    prompt_output = f"""
+    Ответь на вопрос пользователя исходя из документов  <документы>{[chunk['contextualized_content'] for chunk in chunks]}</документы> или 
+    из истории чата. Запрещено употреблять нецензурную лексику, иначе котики погибнут. 
+    В идеале делать чуть ли не прямую цитату из документов.
+    """
+    try:
+        dd = chat_history
+        dd.append({"role": "user", "content": prompt_output})
+        res = await openai.chat.completions.create(
+            messages=dd,
+            model="just-ai/vllm-qwen2-72b-awq",
+            temperature=0,
+            stream=True
+        )
+
+        answer = ""
+        async for chunk in res:
+            content = chunk.choices[0].delta.content
+            answer += content
+            await websocket.send_text(content)
+        return answer
+    except Exception as e:
+        print(f"error {e}")
+
+
+
 async def get_response_from_llm(users_question, chunks):
     res = await openai.chat.completions.create(
         messages=[
