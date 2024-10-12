@@ -34,3 +34,9 @@ prompt_multiplication= """
     id. <перефразированый вопрос>
     
     """
+
+
+def generate_question_prompt(question):
+    return f"""
+    Ответь на следующий вопрос: <вопрос>{question}</вопрос>. Запрещено использовать ненормативную лексику. 
+"""

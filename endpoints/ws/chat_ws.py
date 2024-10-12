@@ -21,13 +21,20 @@ async def websocket_chat(websocket: WebSocket):
     active_connections[user_id] = websocket
 
     generation_task = None
+    await websocket.send_text(f'{user_id}')
     try:
         while True:
             data = await websocket.receive_text()
             if data.startswith("/stop"):
                 continue
 
-            await websocket.send_text(f'Ваш идентификатор: {user_id}')
             break
     except asyncio.CancelledError:
         await websocket.send_text("[INFO] Генерация была прервана")
+
+
+
+async def func(user_id, files):
+    websocket = active_connections[user_id]
+
+    просим гпт не матерясь никогда ни в коем блять случае ответить на вопрос юзера. Передаем его вопрос и контекст

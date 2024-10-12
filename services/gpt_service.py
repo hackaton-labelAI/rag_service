@@ -1,11 +1,8 @@
 import asyncio
-import json
 import re
-from typing import List
 
 from click import prompt
 from openai import AsyncOpenAI
-from whoosh.scoring import dfree
 
 from services.prompts import generate_chunks_prompt
 
@@ -15,8 +12,10 @@ openai = AsyncOpenAI(
     base_url="https://caila.io/api/adapters/openai"
 )
 
+
 def create_final_chunk(text, chunk):
     pass
+
 
 async def fetch_completion(prompt: str):
     try:
@@ -40,7 +39,7 @@ async def fetch_completion(prompt: str):
             "full_text": content
         }
     except Exception as e:
-      print(f"error {e}")
+        print(f"error {e}")
 
 
 async def ranking(query, chunks):
@@ -79,8 +78,40 @@ async def ranking(query, chunks):
         result.append(chunks[index])
     return result
 
-async def interaction_with_llm(document: str):
 
+async def interaction_with_llm(document: str):
+    res = await openai.chat.completions.create(
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": generate_chunks_prompt(document),
+                    }
+                ]
+            }
+        ],
+
+        model="just-ai/vllm-qwen2-72b-awq",
+        temperature=0,
+        stream=False
+    )
+
+    response_json = res
+    input_tokens = int(res.usage.prompt_tokens)
+    output_tokens = int(res.usage.completion_tokens)
+    content = res.choices[0].message.content
+
+    return {
+        "response_json": response_json,
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "full_text": content
+    }
+
+
+async def get_response_from_llm(users_question, chunks):
     res = await openai.chat.completions.create(
         messages=[
             {
@@ -113,4 +144,8 @@ async def interaction_with_llm(document: str):
 
 
 if __name__ == "__main__":
-    asyncio.run(ranking("Какие льготы получит сын если я умру?", [{'contextualized_content': 'Трава сегодня красивая'}, {'contextualized_content': 'Если кот умрёт его надо похоранить'}, {'contextualized_content': 'Получит выплату в размере 1 миллион'}]))
+    asyncio.run(ranking("Какие льготы получит сын если я умру?", [{'contextualized_content': 'Трава сегодня красивая'},
+                                                                  {
+                                                                      'contextualized_content': 'Если кот умрёт его надо похоранить'},
+                                                                  {
+                                                                      'contextualized_content': 'Получит выплату в размере 1 миллион'}]))
