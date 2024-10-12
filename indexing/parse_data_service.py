@@ -1,14 +1,14 @@
 import asyncio
 import re
 from typing import List
+from services.vector_bd import VectorDB
+from services.bm25_search_service import get_index, indexing_document
 from langchain_community.document_loaders import PyPDFLoader, WebBaseLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from pydantic.dataclasses import dataclass
+from services.pars_links import parse_links
 import json
-from services.vector_bd import VectorDB
-from services.bm25_search_service import get_index, indexing_document
 from transformers import AutoTokenizer
-
 
 
 @dataclass
@@ -21,6 +21,7 @@ class dr:
 class ChunkData:
     chunk_text: str
     data: List[dr]
+    link: str
 
 @dataclass
 class ReturnFormat:
@@ -30,11 +31,10 @@ class ReturnFormat:
 bert_tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
 
 def token_length_function(text):
-    """Функция для подсчета количества токенов в тексте."""
     tokens = bert_tokenizer.encode(text, truncation=False)
     return len(tokens)
 
-def parsing_data_from_pdf(file_name: str, token_chunk: int = 250, overlay: int = 50) -> List[ReturnFormat]:
+def parsing_data_from_pdf(file_name: str, section_links: dict, token_chunk: int = 250, overlay: int = 50) -> List[ReturnFormat]:
     file_path = f'../data/{file_name}'
 
     loader = PyPDFLoader(file_path)
@@ -46,14 +46,17 @@ def parsing_data_from_pdf(file_name: str, token_chunk: int = 250, overlay: int =
 
     result = []
     for text in texts:
-        parsed_data = parsing_data_from_text([text], token_chunk, overlay)
+        parsed_data = parsing_data_from_text([text], section_links, token_chunk, overlay)
         result.extend(parsed_data)
     return result
 
 def parsing_data_from_web(token_chunk: int = 450, overlay: int = 100) -> List[ReturnFormat]:
+    section_links = parse_links("https://company.rzd.ru/ru/9353/page/105104?id=1604#7275")
+
     loader = WebBaseLoader(['https://company.rzd.ru/ru/9353/page/105104?id=1604#navPart_7274'])
     file = loader.load()
     content = ''.join(file[i].page_content for i in range(len(file)))
+
     pattern = r'(Раздел \d+\.\s[^\n]+)(.*?)(?=Раздел \d+\.|$)'
     sections = re.findall(pattern, content, re.DOTALL)
 
@@ -61,34 +64,36 @@ def parsing_data_from_web(token_chunk: int = 450, overlay: int = 100) -> List[Re
 
     result = []
     for text in texts:
-        parsed_data = parsing_data_from_text([text], token_chunk, overlay)
+        parsed_data = parsing_data_from_text([text], section_links, token_chunk, overlay)
         result.extend(parsed_data)
 
     return result
 
-def parsing_data_from_text(content: List[dict], token_chunk: int = 450, overlay: int = 100) -> List[ReturnFormat]:
+def parsing_data_from_text(content: List[dict], section_links: dict, token_chunk: int = 450, overlay: int = 100) -> List[ReturnFormat]:
     all_data = []
 
     for text in content:
         chunk_data_list = []
 
-        # Создание объекта RecursiveCharacterTextSplitter
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=token_chunk,
             chunk_overlap=overlay,
             length_function=token_length_function
         )
 
-        # Разделение текста на чанки
         chunks = text_splitter.split_text(text['text'])
-        for chunk in chunks:
-            chunk = chunk.strip()  # Удаляем лишние пробелы
+        section_label = text['label']
 
-            # Добавляем чанк, только если он не пустой и имеет осмысленное содержание
-            if len(chunk) > 10 and not chunk.startswith("Раздел"):  # Избегаем заголовков и слишком коротких чанков
+        link = section_links.get(section_label, "Ссылка не найдена")
+
+        for chunk in chunks:
+            chunk = chunk.strip()
+
+            if len(chunk) > 10 and not chunk.startswith("Раздел"):
                 chunk_data = ChunkData(
                     chunk_text=chunk,
-                    data=[dr(version=1, label=text['label'], text=chunk)]
+                    data=[dr(version=1, label=text['label'], text=chunk)],
+                    link=link
                 )
                 chunk_data_list.append(chunk_data)
 
@@ -100,29 +105,27 @@ def parsing_data_from_text(content: List[dict], token_chunk: int = 450, overlay:
     return all_data
 
 def format_result_to_json(result: List[ReturnFormat]) -> List[dict[str, any]]:
-    formatted_result = {}
+    """Функция для форматирования результата в JSON-формат."""
+    formatted_result = []
 
     for return_format in result:
         for chunk in return_format.chunk_text:
-            original_uuid = chunk.data[0].label
-
-            if original_uuid not in formatted_result:
-                formatted_result[original_uuid] = {
-                    "doc_id": "1",  # фиксируем значение
-                    "content": return_format.full_chapter_text,
-                    "chunks": [],
+            formatted_result.append({
+                "doc_id": "1",  # фиксируем значение
+                "content": return_format.full_chapter_text,
+                "chunk": {
+                    "chunk_id": f"doc_1_chunk_{len(formatted_result)}",
+                    "original_index": len(formatted_result),
+                    "content": chunk.chunk_text,
+                    "version": "1",
+                    "link": chunk.link
                 }
-
-            formatted_result[original_uuid]["chunks"].append({
-                "chunk_id": f"doc_1_chunk_{len(formatted_result[original_uuid]['chunks'])}",
-                "original_index": len(formatted_result[original_uuid]["chunks"]),
-                "content": chunk.chunk_text,
-                "version": "1"
             })
 
-    return list(formatted_result.values())
+    return formatted_result
 
 if __name__ == "__main__":
+    section_links = parse_links("https://company.rzd.ru/ru/9353/page/105104?id=1604#7275")
     result = parsing_data_from_web()
     formatted_json = format_result_to_json(result)
     print(json.dumps(formatted_json, indent=2, ensure_ascii=False))
