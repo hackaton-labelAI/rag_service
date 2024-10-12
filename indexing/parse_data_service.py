@@ -125,8 +125,8 @@ def format_result_to_json(result: List[ReturnFormat]) -> List[dict[str, any]]:
 if __name__ == "__main__":
     result = parsing_data_from_web()
     formatted_json = format_result_to_json(result)
-    # print(json.dumps(formatted_json, indent=2, ensure_ascii=False))
-    vector_db = VectorDB()
-    vector_db.load_data(formatted_json)
-    iix = get_index('../data/bm')
-    indexing_document(iix, formatted_json)
+    print(json.dumps(formatted_json, indent=2, ensure_ascii=False))
+    # vector_db = VectorDB()
+    # vector_db.load_data(formatted_json)
+    # iix = get_index('../data/bm')
+    # indexing_document(iix, formatted_json)
