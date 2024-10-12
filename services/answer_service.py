@@ -1,7 +1,7 @@
 import asyncio
 import json
 from typing import List
-from prompts import prompt_multiplication
+from services.prompts import prompt_multiplication
 from endpoints.models.chat_context import ChatContext
 from services.find_service import ranking, find_chunks
 from services.gpt_service import fetch_completion
