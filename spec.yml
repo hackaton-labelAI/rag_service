@@ -43,6 +43,8 @@ components:
     ChatContext:
       type: object
       properties:
+        session_id:
+          type: string
         context:
           type: array
           items:

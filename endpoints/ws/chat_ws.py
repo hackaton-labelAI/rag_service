@@ -1,3 +1,4 @@
+import uuid
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 import asyncio
@@ -5,10 +6,20 @@ import asyncio
 
 router = APIRouter()
 
+# Словарь для хранения соответствий user_id и WebSocket
+active_connections = {}
+
 
 @router.websocket("/ws/chat")
 async def websocket_chat(websocket: WebSocket):
     await websocket.accept()
+
+    # Генерация уникального идентификатора пользователя
+    user_id = str(uuid.uuid4())
+
+    # Сохраняем WebSocket в словаре
+    active_connections[user_id] = websocket
+
     generation_task = None
     try:
         while True:
@@ -16,9 +27,7 @@ async def websocket_chat(websocket: WebSocket):
             if data.startswith("/stop"):
                 continue
 
-            await websocket.send_text("fsdffdsf")
+            await websocket.send_text(f'Ваш идентификатор: {user_id}')
             break
-    except WebSocketDisconnect:
-        print("Клиент отключился")
     except asyncio.CancelledError:
         await websocket.send_text("[INFO] Генерация была прервана")
