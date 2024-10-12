@@ -251,4 +251,3 @@ if __name__ == "__main__":
     result = parsing_data_from_web()
     formatted_json = format_result_to_json(result)
     print(json.dumps(formatted_json, indent=2, ensure_ascii=False))
-)
