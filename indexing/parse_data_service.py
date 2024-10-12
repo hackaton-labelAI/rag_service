@@ -5,6 +5,8 @@ from langchain_community.document_loaders import PyPDFLoader, WebBaseLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from pydantic.dataclasses import dataclass
 import json
+from services.vector_bd import VectorDB
+from services.bm25_search_service import get_index, indexing_document
 from transformers import AutoTokenizer
 
 
@@ -124,3 +126,7 @@ if __name__ == "__main__":
     result = parsing_data_from_web()
     formatted_json = format_result_to_json(result)
     print(json.dumps(formatted_json, indent=2, ensure_ascii=False))
+    # vector_db = VectorDB()
+    # vector_db.load_data(formatted_json)
+    # iix = get_index('../data/bm')
+    # indexing_document(iix, formatted_json)
