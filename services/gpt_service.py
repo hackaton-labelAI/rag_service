@@ -59,16 +59,24 @@ async def ranking(query, chunks):
     Записи:
     {chunks_to_string(chunks)}
     
-    Формат ответа: номер записи, новая строка и так от лучшего к худшему  
+    Формат ответа: номер записи, новая строка и так от лучшего к худшему. НОМЕР ЗАПИСИ ПОВТОРЯТЬСЯ НЕ МОЖЕТ   
     """
     res = await fetch_completion(ranking_prompt)
     numbers = re.findall(r'\d+', res['full_text'])
 
     numbers = [int(num) for num in numbers]
+
+    unique_numbers = []
+    seen = set()
+
+    for num in numbers:
+        if num not in seen:
+            seen.add(num)
+            unique_numbers.append(num)
+
     result = []
-    for index in numbers[0:5]:
+    for index in unique_numbers[0:5]:  # Используем уникальные индексы
         result.append(chunks[index])
-    print(result)
     return result
 
 async def interaction_with_llm(document: str):
