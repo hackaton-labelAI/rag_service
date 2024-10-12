@@ -9,7 +9,7 @@ from pydantic.dataclasses import dataclass
 
 from services.gpt_service import interaction_with_llm
 # from services.prompts import generate_doc_context_prompt
-from services.search_services import get_index
+
 
 @dataclass
 class ChunkData:

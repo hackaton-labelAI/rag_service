@@ -13,7 +13,7 @@ class ChatApiImpl(BaseChatApi):
         if len(chat_context) >= 2:
             pass
         else:
-            texts = resolve_issue(chat_context)
+            texts = resolve_issue(chat_context.context[0].text_data.content)
             tasks = [search(id, text) for id, text in enumerate(texts)]
             return await asyncio.gather(*tasks)
         # return await super().chat(chat_context)
