@@ -41,14 +41,15 @@ async def websocket_chat(websocket: WebSocket):
         await websocket.send_text("[INFO] Генерация была прервана")
 
 
-
 async def generate_results(user_id, files, chat_history):
-    websocket = active_connections[user_id]
+    if user_id is not None:
+        websocket = active_connections[user_id]
+    else:
+        websocket = None
 
     answer = await stream_output(chat_history, files, websocket)
 
-    df.loc[len(df)] = [None, None,None, None, chat_history, None, None, None, None, None, None, None, None, answer, files, None]
+    df.loc[len(df)] = [None, None, None, None, chat_history, None, None, None, None, None, None, None, None, answer, files, None]
     df.to_csv(knowledge_base_path, index=False)
-
 
 

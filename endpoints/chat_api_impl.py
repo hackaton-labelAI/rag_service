@@ -29,7 +29,8 @@ class ChatApiImpl(BaseChatApi):
             for item in dd:
                 cc.append(ChatRAGData(chunk_text=item['original_content']))
             chat_history = [ll.text_data for ll in context]
-            asyncio.create_task(generate_results(chat_context.session_id, dd, chat_history))
+            if chat_context.session_id is not None:
+                asyncio.create_task(generate_results(chat_context.session_id, dd, chat_history))
             return RAGResponseData(
                 id="test",
                 status="ok",
@@ -60,5 +61,4 @@ class ChatApiImpl(BaseChatApi):
                 status = "ok",
                 data=cc
             )
-
         # return await super().chat(chat_context)

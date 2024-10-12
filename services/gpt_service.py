@@ -118,7 +118,10 @@ async def stream_output(chat_history, chunks, websocket):
     В идеале делать чуть ли не прямую цитату из документов.
     """
     try:
-        dd = chat_history
+        if chat_history is not None:
+            dd = chat_history
+        else:
+            dd = []
         dd.append({"role": "user", "content": prompt_output})
         res = await openai.chat.completions.create(
             messages=dd,
@@ -133,6 +136,7 @@ async def stream_output(chat_history, chunks, websocket):
             answer += content
             await websocket.send_text(f'{{"llm_message": "{content}"}}')
         await websocket.send_text('{"llm_message": "<|endoftext|>"}')
+
         return answer
     except Exception as e:
         print(f"error {e}")
