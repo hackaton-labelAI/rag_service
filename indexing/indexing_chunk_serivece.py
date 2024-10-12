@@ -6,15 +6,8 @@ from typing import List
 from openai import AsyncOpenAI
 from pydantic.dataclasses import dataclass
 
-<<<<<<< HEAD
-
 from services.gpt_service import interaction_with_llm
 # from services.prompts import generate_doc_context_prompt
-=======
-from indexing.parse_data_service import ReturnFormat, ChunkData
-from services.prompts import generate_doc_context_prompt
->>>>>>> db74678 (hiding before checkout)
-from services.search_services import get_index
 
 @dataclass
 class ChunkData:

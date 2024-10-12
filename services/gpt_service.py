@@ -1,5 +1,8 @@
+import asyncio
 import json
 from typing import List
+
+from click import prompt
 from openai import AsyncOpenAI
 from whoosh.scoring import dfree
 
@@ -18,7 +21,7 @@ async def fetch_completion(prompt: str):
     try:
         res = await openai.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
-            model="just-ai/openai-proxy/gpt-4o",
+            model="just-ai/vllm-qwen2-72b-awq",
             temperature=0,
             response_format={"type": "json_object"},
             stream=False
@@ -39,6 +42,28 @@ async def fetch_completion(prompt: str):
       print(f"error {e}")
 
 
+async def ranking(query, chunks):
+    def chunks_to_string(data):
+        res = ""
+        for i, item in enumerate(data):
+            res += f"{i} -> {item['contextualized_content']}"
+        return res
+
+    ranking_prompt = f"""
+    Тебе надо отранжировать записи которые наиболее чётко соответствуют запросу пользователя, те которые вообще о другом не возвращать
+    
+    Запрос:
+    {query}
+    
+    Записи:
+    {chunks_to_string(chunks)}
+    
+    Верни список от наилучшего к наихудшиму 
+    """
+    res = await fetch_completion(ranking_prompt)
+
+    print(res)
+
 async def interaction_with_llm(document: str):
 
     res = await openai.chat.completions.create(
@@ -54,7 +79,7 @@ async def interaction_with_llm(document: str):
             }
         ],
 
-        model="just-ai/openai-proxy/gpt-4o",
+        model="just-ai/vllm-qwen2-72b-awq",
         temperature=0,
         stream=False
     )
@@ -70,3 +95,7 @@ async def interaction_with_llm(document: str):
         "output_tokens": output_tokens,
         "full_text": content
     }
+
+
+if __name__ == "__main__":
+    asyncio.run(ranking("Какие льготы получит сын если я умру?", [{'contextualized_content': 'Трава сегодня красивая'}, {'contextualized_content': 'Если кот умрёт его надо похоранить'}, {'contextualized_content': 'Получит выплату в размере 1 миллион'}]))
