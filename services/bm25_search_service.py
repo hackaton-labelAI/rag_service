@@ -4,6 +4,8 @@ from whoosh.fields import Schema, TEXT
 from whoosh.index import create_in, open_dir
 from whoosh.qparser import QueryParser
 
+from services.vector_bd import VectorDB
+
 
 # indexing document
 # search
@@ -72,16 +74,11 @@ def search(index, query_string):
 
 
 if __name__=='__main__':
-    ix = get_index('test_index')
-    test_data = [{
-                'doc_id': 'str',
-                'chunk_id': 'str',
-                'original_index': 'str',
-                'original_content': 'девки в озере купались хуй резиновый',
-                'contextualized_content': 'str',
-                'version': 'str',
-            }]
-    indexing_document(ix, test_data)
-    print(search(ix, 'озере'))
+    ix = get_index('../data/bm')
+    vec = VectorDB()
+    vec.load_db()
+    indexing_document(ix, vec.chunks)
+    print(search(ix, 'РЖД'))
+    print(len(search(ix, 'РЖД')))
 
 

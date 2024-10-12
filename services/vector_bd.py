@@ -11,7 +11,7 @@ from annoy import AnnoyIndex
 from openai import AsyncOpenAI
 from tqdm import tqdm
 
-from services.answer_service import result
+
 
 
 class VectorDB:
@@ -68,7 +68,7 @@ class VectorDB:
             ],
             extra_headers={"anthropic-beta": "prompt-caching-2024-07-31"}
         )
-        print(response)
+
         return response.choices[0].message.content
 
     async def load_data(self, dataset: List[Dict[str, Any]], parallel_threads: int = 5, addData = False):
@@ -142,7 +142,7 @@ class VectorDB:
         result = []
         for similariti in similarities:
             result.append(self.chunks[similariti])
-            print(self.chunks[similariti]['contextualized_content'])
+
         return result
 
     async def vectorize_text(self, query: str):

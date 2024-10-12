@@ -1,5 +1,6 @@
 import asyncio
 import json
+import re
 from typing import List
 
 from click import prompt
@@ -58,11 +59,17 @@ async def ranking(query, chunks):
     Записи:
     {chunks_to_string(chunks)}
     
-    Верни список от наилучшего к наихудшиму 
+    Формат ответа: номер записи, новая строка и так от лучшего к худшему  
     """
     res = await fetch_completion(ranking_prompt)
+    numbers = re.findall(r'\d+', res['full_text'])
 
-    print(res)
+    numbers = [int(num) for num in numbers]
+    result = []
+    for index in numbers[0:5]:
+        result.append(chunks[index])
+    print(result)
+    return result
 
 async def interaction_with_llm(document: str):
 
