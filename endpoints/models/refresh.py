@@ -5,7 +5,7 @@ from langchain_community.document_loaders import PyPDFLoader, WebBaseLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from pydantic.dataclasses import dataclass
 import datetime
-from indexing.parse_data_service import parsing_data_from_web, format_result_to_json
+from indexing.parse_data_service import parsing_data_from_web, format_result_to_json, ChunkData
 from fastapi import FastAPI
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from services.vector_bd import VectorDB
@@ -20,11 +20,6 @@ class dr:
     version: int
     label: str
     text: str
-
-@dataclass
-class ChunkData:
-    chunk_text: str
-    data: List[dr]
 
 @dataclass
 class ReturnFormat:
