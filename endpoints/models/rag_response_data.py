@@ -20,9 +20,9 @@ import json
 
 
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
-from endpoints.models.chat_context import ChatContext
+from endpoints.models.chat_rag_data import ChatRAGData
 try:
     from typing import Self
 except ImportError:
@@ -32,9 +32,9 @@ class RAGResponseData(BaseModel):
     """
     RAGResponseData
     """ # noqa: E501
-    id: Optional[StrictInt] = Field(default=None, description="ID of the response")
+    id: Optional[StrictStr] = Field(default=None, description="ID of the response")
     status: Optional[StrictStr] = Field(default=None, description="Status of the response")
-    data: Optional[ChatContext] = None
+    data: Optional[List[ChatRAGData]] = None
     __properties: ClassVar[List[str]] = ["id", "status", "data"]
 
     model_config = {
@@ -74,9 +74,13 @@ class RAGResponseData(BaseModel):
             },
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of data
+        # override the default output from pydantic by calling `to_dict()` of each item in data (list)
+        _items = []
         if self.data:
-            _dict['data'] = self.data.to_dict()
+            for _item in self.data:
+                if _item:
+                    _items.append(_item.to_dict())
+            _dict['data'] = _items
         return _dict
 
     @classmethod
@@ -91,7 +95,7 @@ class RAGResponseData(BaseModel):
         _obj = cls.model_validate({
             "id": obj.get("id"),
             "status": obj.get("status"),
-            "data": ChatContext.from_dict(obj.get("data")) if obj.get("data") is not None else None
+            "data": [ChatRAGData.from_dict(_item) for _item in obj.get("data")] if obj.get("data") is not None else None
         })
         return _obj
 

@@ -20,7 +20,7 @@ import json
 
 
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from endpoints.models.message_data import MessageData
 try:
@@ -32,8 +32,9 @@ class ChatContext(BaseModel):
     """
     ChatContext
     """ # noqa: E501
+    session_id: Optional[StrictStr] = None
     context: Optional[List[MessageData]] = None
-    __properties: ClassVar[List[str]] = ["context"]
+    __properties: ClassVar[List[str]] = ["session_id", "context"]
 
     model_config = {
         "populate_by_name": True,
@@ -91,6 +92,7 @@ class ChatContext(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
+            "session_id": obj.get("session_id"),
             "context": [MessageData.from_dict(_item) for _item in obj.get("context")] if obj.get("context") is not None else None
         })
         return _obj

@@ -43,6 +43,8 @@ components:
     ChatContext:
       type: object
       properties:
+        session_id:
+          type: string
         context:
           type: array
           items:
@@ -59,19 +61,9 @@ components:
     ChatRAGData:
       type: object
       properties:
-        document_date:
-          type: string
-          format: date
-          description: "Date of the document"
         chunk_text:
           type: string
           description: "Text chunk from the document"
-        images:
-          type: array
-          items:
-            type: string
-            format: uri
-            description: "Links to images associated with the document"
 
     ChatTextData:
       type: object
@@ -88,13 +80,15 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
           description: "ID of the response"
         status:
           type: string
           description: "Status of the response"
         data:
-          $ref: '#/components/schemas/ChatContext'
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatRAGData'
 
     DocumentResponse:
       type: object

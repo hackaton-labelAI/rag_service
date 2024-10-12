@@ -20,7 +20,6 @@ import json
 
 
 
-from datetime import date
 from pydantic import BaseModel, ConfigDict, Field, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 try:
@@ -32,10 +31,8 @@ class ChatRAGData(BaseModel):
     """
     ChatRAGData
     """ # noqa: E501
-    document_date: Optional[date] = Field(default=None, description="Date of the document")
     chunk_text: Optional[StrictStr] = Field(default=None, description="Text chunk from the document")
-    images: Optional[List[StrictStr]] = None
-    __properties: ClassVar[List[str]] = ["document_date", "chunk_text", "images"]
+    __properties: ClassVar[List[str]] = ["chunk_text"]
 
     model_config = {
         "populate_by_name": True,
@@ -86,9 +83,7 @@ class ChatRAGData(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "document_date": obj.get("document_date"),
-            "chunk_text": obj.get("chunk_text"),
-            "images": obj.get("images")
+            "chunk_text": obj.get("chunk_text")
         })
         return _obj
 
