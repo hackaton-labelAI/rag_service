@@ -24,6 +24,7 @@ class ChatApiImpl(BaseChatApi):
                     res[chunk['chunk_id']] = chunk
             resp = list(res.values())
             dd = await ranking(chat_context.context[0].text_data.content, resp)
+
             cc=[]
             for item in dd:
                 cc.append(ChatRAGData(chunk_text=item['contextualized_content']))
