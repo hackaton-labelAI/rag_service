@@ -2,7 +2,7 @@
 
 set -e
 ROOT=$(dirname $0)
-cd "$ROOT"
+cd "/home/artur/Рабочий стол/rag_service"
 
 sudo rm -Rf ./endpoints/apis ./endpoints/models ./endpoints/router_init.py
 mkdir -p "$ROOT/endpoints"
@@ -12,7 +12,7 @@ docker run --rm -v "${PWD}":/app openapitools/openapi-generator-cli:latest-relea
     -i /app/spec.yml  -g python-fastapi   -o /app/openapi-generator-output \
     --additional-properties=packageName=endpoints --additional-properties=fastapiImplementationPackage=endpoints
 
-sudo chown "$USER":"$USER" -R openapi-generator-output
+sudo chown -R "$USER"  openapi-generator-output
 rm -Rf endpoints/apis endpoints/models
 mv openapi-generator-output/src/endpoints/apis endpoints/
 mv openapi-generator-output/src/endpoints/models endpoints/
