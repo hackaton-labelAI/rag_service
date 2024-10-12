@@ -14,9 +14,8 @@ class ChatApiImpl(BaseChatApi):
     async def chat(self, chat_context: ChatContext) -> RAGResponseData:
         if len(chat_context.context) >= 2:
             context = chat_context.context[-5:]
-            context.reverse()
-            query = context[0].text_data.content
-            texts = await resolve_issue(chat_context.context[0].text_data.content)
+            query = context[-1].text_data.content
+            texts = await resolve_issue(query)
             tasks = [search(id, text) for id, text in enumerate(texts)]
             results = await asyncio.gather(*tasks)
             res = {}
@@ -26,10 +25,12 @@ class ChatApiImpl(BaseChatApi):
                         res[chunk['chunk_id']] = chunk
 
             resp = list(res.values())
-            dd = await ranking(chat_context.context[0].text_data.content, resp)
+            dd = await ranking(query, resp)
             cc = []
             for item in dd:
                 cc.append(ChatRAGData(chunk_text=item['contextualized_content']))
+            chat_history = [ll.text_data for ll in context]
+
             return RAGResponseData(
                 id="test",
                 status="ok",
@@ -53,6 +54,8 @@ class ChatApiImpl(BaseChatApi):
             cc=[]
             for item in dd:
                 cc.append(ChatRAGData(chunk_text=item['contextualized_content']))
+            chat_history = [ll.text_data for ll in chat_context.context]
+
             return RAGResponseData(
                 id= "test",
                 status = "ok",
