@@ -131,43 +131,11 @@ async def stream_output(chat_history, chunks, websocket):
         async for chunk in res:
             content = chunk.choices[0].delta.content
             answer += content
-            await websocket.send_text(content)
+            await websocket.send_text(f'{{"llm_message": "{content}"}}')
+        await websocket.send_text('{"llm_message": "<|endoftext|>"}')
         return answer
     except Exception as e:
         print(f"error {e}")
-
-
-
-async def get_response_from_llm(users_question, chunks):
-    res = await openai.chat.completions.create(
-        messages=[
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": generate_chunks_prompt(document),
-                    }
-                ]
-            }
-        ],
-
-        model="just-ai/vllm-qwen2-72b-awq",
-        temperature=0,
-        stream=False
-    )
-
-    response_json = res
-    input_tokens = int(res.usage.prompt_tokens)
-    output_tokens = int(res.usage.completion_tokens)
-    content = res.choices[0].message.content
-
-    return {
-        "response_json": response_json,
-        "input_tokens": input_tokens,
-        "output_tokens": output_tokens,
-        "full_text": content
-    }
 
 
 if __name__ == "__main__":

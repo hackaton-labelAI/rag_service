@@ -13,14 +13,25 @@
 
 
 from fastapi import FastAPI
+from starlette.middleware.cors import CORSMiddleware
 
 from endpoints.apis.chat_api import router as ChatApiRouter
 from endpoints.apis.document_api import router as DocumentApiRouter
+
+
 
 app = FastAPI(
     title="RAG API",
     description="API for RAG",
     version="1.0.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(ChatApiRouter)
