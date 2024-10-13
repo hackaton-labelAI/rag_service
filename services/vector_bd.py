@@ -78,7 +78,7 @@ class VectorDB:
                 self.load_db()
                 return
 
-        total_chunks = sum(len(doc['chunks']) for doc in dataset)
+        # total_chunks = sum(len(doc['chunks']) for doc in dataset)
         async def process_chunk(doc, chunk, current_id):
             contextualized_text = await self.situate_context(doc['content'], chunk['content'])
             full_text = f"{chunk['content']}\n\n{contextualized_text}"

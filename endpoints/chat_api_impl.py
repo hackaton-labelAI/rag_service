@@ -14,14 +14,15 @@ class ChatApiImpl(BaseChatApi):
         if len(chat_context.context) >= 2:
             context = chat_context.context[-5:]
             query = context[-1].text_data.content
-            texts = await resolve_issue(query)
-            tasks = [search(id, text) for id, text in enumerate(texts)]
-            results = await asyncio.gather(*tasks)
+            # texts = await resolve_issue(query)
+            # tasks = [search(id, text) for id, text in enumerate(texts)]
+            # results = await asyncio.gather(*tasks)
+            results = await search(1, query)
             res = {}
-            for task in results:
-                for chunk in task:
-                    if chunk['chunk_id'] not in res:
-                        res[chunk['chunk_id']] = chunk
+
+            for chunk in results:
+                if chunk['chunk_id'] not in res:
+                    res[chunk['chunk_id']] = chunk
 
             resp = list(res.values())
             dd = await ranking(query, resp)
@@ -38,15 +39,15 @@ class ChatApiImpl(BaseChatApi):
             )
         else:
 
-            texts = await resolve_issue(chat_context.context[0].text_data.content)
-            tasks = [search(id, text) for id, text in enumerate(texts)]
-            results = await asyncio.gather(*tasks)
+            # texts = await resolve_issue(chat_context.context[0].text_data.content)
+            # tasks = [search(id, text) for id, text in enumerate(texts)]
+            # results = await asyncio.gather(*tasks)
+            results = await search(1, chat_context.context[0].text_data.content)
             res = {}  # Инициализируем пустой словарь для хранения уникальных chunk
 
-            for task in results:
-                for chunk in task:
-                    if chunk['chunk_id'] not in res:
-                        res[chunk['chunk_id']] = chunk
+            for chunk in results:
+                if chunk['chunk_id'] not in res:
+                    res[chunk['chunk_id']] = chunk
 
             resp = list(res.values())
             dd = await ranking(chat_context.context[0].text_data.content, resp)

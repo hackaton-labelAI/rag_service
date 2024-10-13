@@ -34,9 +34,9 @@ async def websocket_chat(websocket: WebSocket):
         while True:
             data = await websocket.receive_text()
             if data.startswith("/stop"):
-                continue
+                break
 
-            break
+            continue
     except asyncio.CancelledError:
         await websocket.send_text("[INFO] Генерация была прервана")
 
