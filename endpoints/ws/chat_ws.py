@@ -5,10 +5,8 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 import asyncio
 import requests
 from requests import session
-
+import json
 from services.gpt_service import stream_output
-
-# from services.text_generation import generate_text
 
 router = APIRouter()
 
@@ -39,14 +37,20 @@ async def websocket_chat(websocket: WebSocket):
             continue
     except asyncio.CancelledError:
         await websocket.send_text("[INFO] Генерация была прервана")
+    finally:
+        # Удаляем WebSocket из словаря при отключении
+        del active_connections[user_id]
 
 
 async def generate_results(user_id, files, chat_history):
     if user_id is not None:
-        websocket = active_connections[user_id]
+        websocket = active_connections.get(user_id)
+        if websocket is None:
+            raise ValueError(f"WebSocket с user_id {user_id} не найден.")
     else:
         websocket = None
 
+    # Выполняем асинхронный запрос к gpt_service
     answer = await stream_output(chat_history, files, websocket)
 
     TOKEN = '1000097868.110610.cfUF9zxN1MD7Ot8IHmr48LLXdtDv9Do9T9RZkfSL'
@@ -72,11 +76,9 @@ async def generate_results(user_id, files, chat_history):
             response = requests.post(url, headers=headers, json=data)
             response.raise_for_status()
 
-            response = response.json()
-
-            full_text = response.get('choices')[0].get('message').get('content')
-
-            model = response.get('model', 'gpt-3.5-turbo')
+            response_data = response.json()
+            full_text = response_data.get('choices')[0].get('message').get('content')
+            model = response_data.get('model', 'gpt-3.5-turbo')
 
             return {
                 "full_text": full_text,
@@ -101,7 +103,6 @@ async def generate_results(user_id, files, chat_history):
         11) 's3': вопрос перефразированный c сокращением
 
         Важно: f1, f2, f3, nf1, nf2, nf3, s1, s2, s3 должны быть уникальными
-        н
         Верни только json в следующем виде:
         {'category': <str>,
          'tegs': <str>,
@@ -116,14 +117,38 @@ async def generate_results(user_id, files, chat_history):
          's3': <str>, 
         }
         """
+
+    # Получаем ответ от AI
     res = fetch_completion(prompt % str(chat_history))
-    category = res['category']
-    tegs = res['tags']
-    f1, f2, f3 = res['f1'], res['f2'], res['f3']
-    nf1, nf2, nf3 = res['nf1'], res['nf2'], res['nf3']
-    s1, s2, s3 = res['f1'], res['f2'], res['f3']
 
-    df.loc[len(df)] = [df.shape[0] + 1, category, tegs, chat_history, f1, f2, f3, nf1, nf2, nf3, s1, s2, s3, answer, None, None]
-    df.to_csv(knowledge_base_path, index=False)
+    # Проверка на наличие ошибки
+    if "error" in res:
+        print(f"Ошибка при вызове API: {res['error']}")
+        return
 
+    try:
+        # Парсим ответ в JSON
+        response_json = json.loads(res['full_text'])
 
+        # Проверка наличия всех ключей в JSON
+        expected_keys = ['category', 'tegs', 'f1', 'f2', 'f3', 'nf1', 'nf2', 'nf3', 's1', 's2', 's3']
+        if not all(key in response_json for key in expected_keys):
+            raise ValueError("Некоторые ключи отсутствуют в ответе от API")
+
+        category = response_json['category']
+        tegs = response_json['tegs']
+        f1, f2, f3 = response_json['f1'], response_json['f2'], response_json['f3']
+        nf1, nf2, nf3 = response_json['nf1'], response_json['nf2'], response_json['nf3']
+        s1, s2, s3 = response_json['s1'], response_json['s2'], response_json['s3']
+    except (json.JSONDecodeError, KeyError) as e:
+        print(f"Ошибка обработки данных: {e}")
+        return
+
+    # Добавление строки в DataFrame и сохранение в CSV
+    try:
+        df.loc[len(df)] = [
+            df.shape[0] + 1, category, tegs, chat_history, f1, f2, f3, nf1, nf2, nf3, s1, s2, s3, answer, None, None
+        ]
+        df.to_csv(knowledge_base_path, index=False)
+    except Exception as e:
+        print(f"Ошибка при записи в CSV: {e}")
