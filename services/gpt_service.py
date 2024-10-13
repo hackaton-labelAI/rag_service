@@ -74,11 +74,9 @@ async def ranking(query, chunks):
             unique_numbers.append(num)
 
     result = []
-    for index in unique_numbers[0:5]:  # Используем уникальные индексы
-        try:
-            result.append(chunks[index])
-        except:
-            pass
+
+    for index in unique_numbers:  # Используем уникальные индексы
+        result.append(next((item for item in chunks if item["original_index"] == 2), None))
     return result
 
 
@@ -143,6 +141,63 @@ async def stream_output(chat_history, chunks, websocket):
         return answer
     except Exception as e:
         print(f"error {e}")
+
+async def output(chat_history, chunks):
+    prompt_output = f"""
+    Ответь на вопрос пользователя {chat_history} исходя из документов  <документы>{[chunk['contextualized_content'] for chunk in chunks]}</документы> или 
+    из истории чата. Запрещено употреблять нецензурную лексику, иначе котики погибнут. 
+    В идеале делать чуть ли не прямую цитату из документов.
+    """
+    try:
+        dd =[]
+        dd.append({"role": "user", "content": prompt_output})
+        res = await openai.chat.completions.create(
+            messages=dd,
+            model="just-ai/vllm-qwen2-72b-awq",
+            temperature=0,
+            stream=False
+        )
+
+        response_json = res
+        input_tokens = int(res.usage.prompt_tokens)
+        output_tokens = int(res.usage.completion_tokens)
+        content = res.choices[0].message.content
+
+        return content
+
+    except Exception as e:
+        print(f"error {e}")
+
+# async def get_response_from_llm(users_question, chunks):
+#     res = await openai.chat.completions.create(
+#         messages=[
+#             {
+#                 "role": "user",
+#                 "content": [
+#                     {
+#                         "type": "text",
+#                         "text": generate_chunks_prompt(document),
+#                     }
+#                 ]
+#             }
+#         ],
+#
+#         model="just-ai/vllm-qwen2-72b-awq",
+#         temperature=0,
+#         stream=False
+#     )
+#
+#     response_json = res
+#     input_tokens = int(res.usage.prompt_tokens)
+#     output_tokens = int(res.usage.completion_tokens)
+#     content = res.choices[0].message.content
+#
+#     return {
+#         "response_json": response_json,
+#         "input_tokens": input_tokens,
+#         "output_tokens": output_tokens,
+#         "full_text": content
+#     }
 
 
 if __name__ == "__main__":
