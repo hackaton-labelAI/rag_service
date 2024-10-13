@@ -13,7 +13,7 @@ from transformers import AutoTokenizer
 
 @dataclass
 class dr:
-    version: int
+    version: str
     label: str
     text: str
 
@@ -102,7 +102,7 @@ def parsing_data_from_text(content: List[dict], section_links: dict, token_chunk
                         if current_chunk:
                             chunk_data = ChunkData(
                                 chunk_text=current_chunk.strip(),
-                                data=[dr(version=1, label=text['label'], text=current_chunk.strip())],
+                                data=[dr(version='1', label=text['label'], text=current_chunk.strip())],
                                 link=link
                             )
                             chunk_data_list.append(chunk_data)
@@ -111,7 +111,7 @@ def parsing_data_from_text(content: List[dict], section_links: dict, token_chunk
                 if current_chunk:  # Добавляем оставшийся текст как последний чанк
                     chunk_data = ChunkData(
                         chunk_text=current_chunk.strip(),
-                        data=[dr(version=1, label=text['label'], text=current_chunk.strip())],
+                        data=[dr(version='1', label=text['label'], text=current_chunk.strip())],
                         link=link
                     )
                     chunk_data_list.append(chunk_data)
@@ -124,26 +124,30 @@ def parsing_data_from_text(content: List[dict], section_links: dict, token_chunk
     return all_data
 
 
-def format_result_to_json(result: List[ReturnFormat]) -> List[dict]:
-    """Функция для форматирования результата в JSON-формат."""
-    formatted_result = []
+def format_result_to_json(result: List[ReturnFormat]) -> List[dict[str, any]]:
+    formatted_result = {}
 
     for return_format in result:
         for chunk in return_format.chunk_text:
-            formatted_result.append({
-                "doc_id": "1",  # фиксируем значение
-                "content": return_format.full_chapter_text,
-                "chunk": {
-                    "chunk_id": f"doc_1_chunk_{len(formatted_result) + 1}",
-                    # Увеличиваем на 1 для лучшего идентификатора
-                    "original_index": len(formatted_result) + 1,  # Увеличиваем на 1 для правильного индекса
-                    "content": chunk.chunk_text,
-                    "version": "1",
-                    "link": chunk.link  # Раскомментируйте, если нужно
+            original_uuid = chunk.data[0].label
+
+            if original_uuid not in formatted_result:
+                formatted_result[original_uuid] = {
+                    "doc_id": "1",  # фиксируем значение
+                    "content": return_format.full_chapter_text,
+                    "chunks": [],
                 }
+
+            formatted_result[original_uuid]["chunks"].append({
+                "chunk_id": f"doc_1_chunk_{len(formatted_result[original_uuid]['chunks'])}",
+                "original_index": len(formatted_result[original_uuid]["chunks"]),
+                "content": chunk.chunk_text,
+                "version": "1",
+                "link": chunk.link
             })
 
-    return formatted_result
+    return list(formatted_result.values())
+
 
 
 if __name__ == "__main__":
