@@ -6,7 +6,7 @@
 docker build -t my-fastapi-app . 
 docker run -p 8000:8000 my-fastapi-app
 ```
-## Запуск [фронта](https://github.com/Topleess/hackaton-labelAI-best-front-by-shama-for-ragtree/8232c3bd958817c950d8109f4a10cd49038201cf)
+## Запуск [фронта](https://github.com/Topleess/hackaton-labelAI-best-front-by-shama-for-rag)
 Запустите следующие команды:    
 ```
 npm install
