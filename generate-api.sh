@@ -2,7 +2,7 @@
 
 set -e
 ROOT=$(dirname $0)
-cd "/home/artur/Рабочий стол/rag_service"
+cd "$ROOT"
 
 sudo rm -Rf ./endpoints/apis ./endpoints/models ./endpoints/router_init.py
 mkdir -p "$ROOT/endpoints"

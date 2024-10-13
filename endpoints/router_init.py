@@ -18,8 +18,6 @@ from starlette.middleware.cors import CORSMiddleware
 from endpoints.apis.chat_api import router as ChatApiRouter
 from endpoints.apis.document_api import router as DocumentApiRouter
 
-
-
 app = FastAPI(
     title="RAG API",
     description="API for RAG",

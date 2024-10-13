@@ -34,7 +34,7 @@ class MessageData(BaseModel):
     MessageData
     """ # noqa: E501
     text_data: Optional[ChatTextData] = None
-    rag_data: Optional[ChatRAGData] = None
+    rag_data: Optional[List[ChatRAGData]] = None
     __properties: ClassVar[List[str]] = ["text_data", "rag_data"]
 
     model_config = {
@@ -77,9 +77,13 @@ class MessageData(BaseModel):
         # override the default output from pydantic by calling `to_dict()` of text_data
         if self.text_data:
             _dict['text_data'] = self.text_data.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of rag_data
+        # override the default output from pydantic by calling `to_dict()` of each item in rag_data (list)
+        _items = []
         if self.rag_data:
-            _dict['rag_data'] = self.rag_data.to_dict()
+            for _item in self.rag_data:
+                if _item:
+                    _items.append(_item.to_dict())
+            _dict['rag_data'] = _items
         return _dict
 
     @classmethod
@@ -93,7 +97,7 @@ class MessageData(BaseModel):
 
         _obj = cls.model_validate({
             "text_data": ChatTextData.from_dict(obj.get("text_data")) if obj.get("text_data") is not None else None,
-            "rag_data": ChatRAGData.from_dict(obj.get("rag_data")) if obj.get("rag_data") is not None else None
+            "rag_data": [ChatRAGData.from_dict(_item) for _item in obj.get("rag_data")] if obj.get("rag_data") is not None else None
         })
         return _obj
 

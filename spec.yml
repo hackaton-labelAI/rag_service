@@ -56,7 +56,9 @@ components:
         text_data:
           $ref: "#/components/schemas/ChatTextData"
         rag_data:
-          $ref: "#/components/schemas/ChatRAGData"
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatRAGData"
 
     ChatRAGData:
       type: object

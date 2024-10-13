@@ -75,7 +75,10 @@ async def ranking(query, chunks):
 
     result = []
     for index in unique_numbers[0:5]:  # Используем уникальные индексы
-        result.append(chunks[index])
+        try:
+            result.append(chunks[index])
+        except:
+            pass
     return result
 
 
@@ -114,8 +117,8 @@ async def interaction_with_llm(document: str):
 async def stream_output(chat_history, chunks, websocket):
     prompt_output = f"""
     Ответь на вопрос пользователя исходя из документов  <документы>{[chunk['contextualized_content'] for chunk in chunks]}</документы> или 
-    из истории чата. Запрещено употреблять нецензурную лексику, иначе котики погибнут. 
-    В идеале делать чуть ли не прямую цитату из документов.
+    из истории чата. Запрещено употреблять нецензурную лексику, затрагивать политику, и другие острые темы, иначе котики погибнут. 
+    Если вопрос пользователя не относится к теме документов, говорим, что мы не готовы это обсуждать.
     """
     try:
         if chat_history is not None:
